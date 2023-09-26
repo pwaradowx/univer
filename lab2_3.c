@@ -10,7 +10,7 @@ void main()
 
 	setlocale(LC_ALL, "Russian");
 
-	printf("Дано:\n%13d\n%13d\n        ________\nОтвет:\n%+10.2d%.3f", n, l, n / l, n * 1. / l);
+	printf("Г„Г Г­Г®:\n%13d\n%13d\n        ________\nГЋГІГўГҐГІ:\n%+10.2d%.3f", n, l, n / l, n * 1. / l);
 
 	return 0;
 }
