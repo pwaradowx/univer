@@ -100,12 +100,19 @@ void task3()
 	printf("\nВведит длину верхней грани: ");
 	scanf("%d", &length);
 
-	for (int i = 1; i <= length; i++)
-	{
-		for (int j = 1; j <= high; j++)
-		{
+	int i, j, k;
+
+	for (i = 1; i <= high; i++) {
+		for (j = high - i; j > 0; j--) {
+			printf(" ");
+		}
+
+		for (k = 1; k <= length; k++) {
 			printf("%c", symb);
 		}
+
+		length += 2;
+		printf("\n");
 	}
 }
 
