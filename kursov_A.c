@@ -6,18 +6,22 @@
 * Он содержит:
 *	struct buildingData - структура для хранения данных о
 *		площади помещения и парамаетрах материала.
-*	void main() - главня функция.
-*	void programMenu() - функция, реализующая графическое
+*	int main() - главня функция.
+*	building_data loadBuildingData() - функция, загружающая 
+		ранее используемые данные из файла.
+*	int programMenu() - функция, реализующая графическое
 *		взаимодействия пользователя и программы через меню.
-*	void setupRoom() - функция для ввода данных о 
+*	int setupRoom() - функция для ввода данных о 
 		параметрах комнаты и проемах.
-*	void setupMaterial() - функция для ввода данных о 
+*	int setupMaterial() - функция для ввода данных о 
 *		параметрах используемого материала.
-*	void calculateResult() - функция для вывода
+*	int calculateResult() - функция для вывода
 *		результатов вычислений в консоль.
-*	void continueRequest() - функция для запроса у 
+*	int continueRequest() - функция для запроса у 
 *		пользователя на продолжение работы программы
 *		или ее завершение.
+*	int saveBuildingData() - сохраняет введенные значения
+*		в файл для повторного использования.
 */
 
 #define _CRT_SECURE_NO_WARNINGS
@@ -25,6 +29,7 @@
 #include <locale.h>
 #include <stdlib.h>
 #include <math.h>
+#define FILE_NAME "shtukaturka.txt";
 
 struct buildingData
 {
@@ -45,23 +50,92 @@ struct buildingData
 };
 typedef struct buildingData building_data;
 
-void programMenu(building_data*);
-void setupRoom(building_data*);
-void setupMaterial(building_data*);
-void calculateResult(building_data*);
-void continueRequest(building_data*);
+building_data loadBuildingData();
+int programMenu(building_data*);
+int setupRoom(building_data*);
+int setupMaterial(building_data*);
+int calculateResult(building_data*);
+int continueRequest(building_data*);
+int saveBuildingData(building_data*);
 
-void main()
+int main()
 {
 	setlocale(LC_ALL, "Russian");
 
-	building_data data = {0};
+	building_data data = loadBuildingData();
 
 	programMenu(&data);
 }
 
+// Функция для загрузки ранее используемых данных.
+building_data loadBuildingData()
+{
+	const building_data empty_data = {0};
+	building_data loaded_data = {0};
+
+	FILE* file;
+	const char* filename = FILE_NAME;
+	char buffer[1024];
+
+	file = fopen(filename, "r");
+	if (file == NULL)
+	{
+		// Файл с данными не был найден, поэтому начинаем все с чистого листа.
+		return empty_data;
+	}
+
+	int c = 0;
+	while (fgets(buffer, sizeof(buffer), file) != NULL) {
+		printf("%s", buffer);
+
+		switch (c)
+		{
+			case 1:
+				sscanf(buffer, "%lf", &loaded_data.room_length);
+				break;
+			case 3:
+				sscanf(buffer, "%lf", &loaded_data.room_width);
+				break;
+			case 5:
+				sscanf(buffer, "%lf", &loaded_data.room_height);
+				break;
+			case 7:
+				sscanf(buffer, "%d", &loaded_data.window_count);
+				break;
+			case 9:
+				sscanf(buffer, "%lf", &loaded_data.window_height);
+				break;
+			case 11:
+				sscanf(buffer, "%lf", &loaded_data.window_width);
+				break;
+			case 13:
+				sscanf(buffer, "%d", &loaded_data.door_count);
+				break;
+			case 15:
+				sscanf(buffer, "%lf", &loaded_data.door_height);
+				break;
+			case 17:
+				sscanf(buffer, "%lf", &loaded_data.door_width);
+				break;
+			case 19:
+				sscanf(buffer, "%lf", &loaded_data.layer_thickness);
+				break;
+			case 21:
+				sscanf(buffer, "%lf", &loaded_data.consumption);
+				break;
+			default:
+				break;
+		}
+		c++;
+	}
+
+	fclose(file);
+
+	return loaded_data;
+}
+
 // Функция для вывода основного меню взаимодействия пользователя с программой.
-void programMenu(building_data *pData)
+int programMenu(building_data *pData)
 {
 	int command_id = 0;
 
@@ -90,10 +164,12 @@ void programMenu(building_data *pData)
 	default:
 		break;
 	}
+
+	return 0;
 }
 
 // Функция для ввода данных о команате и проемах.
-void setupRoom(building_data *pData)
+int setupRoom(building_data *pData)
 {
 	double room_length, room_width, room_height;
 
@@ -118,9 +194,9 @@ void setupRoom(building_data *pData)
 		printf("Введите высоту комнаты(см): ");
 		scanf("%lf", &room_height);
 	}
-	pData->room_length = room_length / 100;
-	pData->room_width = room_width / 100;
-	pData->room_height = room_height / 100;
+	pData->room_length = room_length;
+	pData->room_width = room_width;
+	pData->room_height = room_height;
 #pragma endregion
 
 #pragma region SetupWindows
@@ -151,8 +227,8 @@ void setupRoom(building_data *pData)
 			scanf("%lf", &window_width);
 		}
 
-		pData->window_height = window_height / 100;
-		pData->window_width = window_width / 100;
+		pData->window_height = window_height;
+		pData->window_width = window_width;
 	}
 #pragma endregion
 
@@ -184,16 +260,18 @@ void setupRoom(building_data *pData)
 			scanf("%lf", &door_width);
 		}
 
-		pData->door_height = door_height / 100;
-		pData->door_width = door_width / 100;
+		pData->door_height = door_height;
+		pData->door_width = door_width;
 	}
 #pragma endregion
 
 	programMenu(pData);
+
+	return 0;
 }
 
 // Функция для ввода данных об используемом материале.
-void setupMaterial(building_data *pData)
+int setupMaterial(building_data *pData)
 {
 	double layer_thikness, consumption;
 
@@ -221,20 +299,22 @@ void setupMaterial(building_data *pData)
 	pData->consumption = consumption;
 
 	programMenu(pData);
+
+	return 0;
 }
 
 // Функция для расчета итогового результата и его вывода.
-void calculateResult(building_data *pData)
+int calculateResult(building_data *pData)
 {
-	double room_length = pData->room_length;
-	double room_width = pData->room_width;
-	double room_height = pData->room_height;
+	double room_length = pData->room_length / 100;
+	double room_width = pData->room_width / 100;
+	double room_height = pData->room_height / 100;
 	int window_count = pData->window_count;
-	double window_height = pData->window_height;
-	double window_width = pData->window_width;
+	double window_height = pData->window_height / 100;
+	double window_width = pData->window_width / 100;
 	int door_count = pData->door_count;
-	double door_height = pData->door_height;
-	double door_width = pData->door_width;
+	double door_height = pData->door_height / 100;
+	double door_width = pData->door_width / 100;
 	double layer_thickness = pData->layer_thickness;
 	double consumption = pData->consumption;
 
@@ -249,10 +329,12 @@ void calculateResult(building_data *pData)
 	printf("Вам понадобится %.2lf кг штукатурки.\n", result);
 
 	continueRequest(pData);
+
+	return 0;
 }
 
 // Функция для повторного использования программы без необходимости ее перезапуска.
-void continueRequest(building_data *pData)
+int continueRequest(building_data *pData)
 {
 	int answer;
 
@@ -266,7 +348,9 @@ void continueRequest(building_data *pData)
 
 	if (answer == 0)
 	{
-		printf("Завершение работы...");
+		saveBuildingData(pData);
+		printf("Введенные ранее значения сохранены!\n");
+		printf("Завершение работы...\n");
 		exit(EXIT_SUCCESS);
 	}
 	else
@@ -274,4 +358,47 @@ void continueRequest(building_data *pData)
 		printf("Введенные ранее значения сохранены!\nИх можно изменить используя меню!\n");
 		programMenu(pData);
 	}
+
+	return 0;
+}
+
+// Функция для сохранения введенных данных в файл.
+int saveBuildingData(building_data *pData)
+{
+	FILE* file;
+	const char* filename = FILE_NAME;
+
+	file = fopen(filename, "w");
+	if (file == NULL)
+	{
+		printf("Не удалось открыть или создать файл.");
+		return -1;
+	}
+
+	fprintf(file, "%s\n", "Длина комнаты (см):");
+	fprintf(file, "%.0lf\n", pData->room_length);
+	fprintf(file, "%s\n", "Ширина комнаты (см):");
+	fprintf(file, "%.0lf\n", pData->room_width);
+	fprintf(file, "%s\n", "Высота комнаты (см):");
+	fprintf(file, "%.0lf\n", pData->room_height);
+	fprintf(file, "%s\n", "Количество окон:");
+	fprintf(file, "%.0d\n", pData->window_count);
+	fprintf(file, "%s\n", "Высота окон (см):");
+	fprintf(file, "%.0lf\n", pData->window_height);
+	fprintf(file, "%s\n", "Ширина окон (см):");
+	fprintf(file, "%.0lf\n", pData->window_width);
+	fprintf(file, "%s\n", "Количество дверей:");
+	fprintf(file, "%.0d\n", pData->door_count);
+	fprintf(file, "%s\n", "Высота дверей (см):");
+	fprintf(file, "%.0lf\n", pData->door_height);
+	fprintf(file, "%s\n", "Ширина дверей (см):");
+	fprintf(file, "%.0lf\n", pData->door_width);
+	fprintf(file, "%s\n", "Толщина слоя штукатурки (мм):");
+	fprintf(file, "%.2lf\n", pData->layer_thickness);
+	fprintf(file, "%s\n", "Расход штукатурки на 1 м2");
+	fprintf(file, "%.2lf\n", pData->consumption);
+
+	fclose(file);
+
+	return 0;
 }
